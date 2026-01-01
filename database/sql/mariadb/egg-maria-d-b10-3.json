@@ -4,26 +4,32 @@
         "version": "PTDL_v2",
         "update_url": null
     },
-    "exported_at": "2023-12-19T09:54:17+01:00",
-    "name": "MariaDB 10.3",
-    "author": "parker@parkervcp.com",
-    "description": "One of the most popular database servers. Made by the original developers of MySQL. Guaranteed to stay open source.",
+    "exported_at": "2026-01-01T10:58:42+00:00",
+    "name": "MariaDB",
+    "author": "admin@micheal.cc",
+    "description": "MariaDB is one of the most popular database servers. Made by the original developers of MySQL. Guaranteed to stay open source.",
     "features": null,
     "docker_images": {
-        "MariaDB 10.3": "ghcr.io\/parkervcp\/yolks:mariadb_10.3"
+        "MariaDB 11.4 (LTS)": "ghcr.io/pterodactyl/yolks:mariadb_11.4",
+        "MariaDB 11.2": "ghcr.io/pterodactyl/yolks:mariadb_11.2",
+        "MariaDB 10.11 (LTS)": "ghcr.io/pterodactyl/yolks:mariadb_10.11",
+        "MariaDB 10.6": "ghcr.io/pterodactyl/yolks:mariadb_10.6",
+        "MariaDB 10.5": "ghcr.io/pterodactyl/yolks:mariadb_10.5",
+        "MariaDB 10.4": "ghcr.io/pterodactyl/yolks:mariadb_10.4",
+        "MariaDB 10.3": "ghcr.io/pterodactyl/yolks:mariadb_10.3"
     },
     "file_denylist": [],
-    "startup": "{ \/usr\/sbin\/mysqld & } && sleep 5 && mysql -u root",
+    "startup": "{ /usr/sbin/mariadbd & } && sleep 5 && mariadb -u root",
     "config": {
         "files": "{\r\n    \".my.cnf\": {\r\n        \"parser\": \"file\",\r\n        \"find\": {\r\n            \"port\": \"port = {{server.build.default.port}}\",\r\n            \"bind-address\": \"bind-address=0.0.0.0\"\r\n        }\r\n    }\r\n}",
-        "startup": "{\r\n    \"done\": \"mysqld: ready for connections\"\r\n}",
+        "startup": "{\r\n    \"done\": \"ready for connections\"\r\n}",
         "logs": "{}",
         "stop": "shutdown; exit;"
     },
     "scripts": {
         "installation": {
-            "script": "#!\/bin\/bash\r\n# MariaDB Installation Script\r\n#\r\n# Server Files: \/mnt\/server\r\nset -x\r\n\r\necho -e \"installing dependencies\"\r\napt-get -y update\r\napt-get -y install curl\r\n\r\n## add user\r\necho -e \"adding container user\"\r\nuseradd -d \/home\/container -m container -s \/bin\/bash\r\n\r\n## own server to container user\r\nchown container: \/mnt\/server\/\r\n\r\n## run install script as user\r\necho -e \"getting my.conf\"\r\nif [ -f \/mnt\/server\/.my.cnf ]; then\r\n    echo -e \"moving current config for install\"\r\n    mv \/mnt\/server\/.my.cnf \/mnt\/server\/custom.my.cnf\r\n    runuser -l container -c 'curl https:\/\/raw.githubusercontent.com\/parkervcp\/eggs\/master\/database\/sql\/mariadb\/install.my.cnf > \/mnt\/server\/.my.cnf'\r\nelse\r\n    runuser -l container -c 'curl https:\/\/raw.githubusercontent.com\/parkervcp\/eggs\/master\/database\/sql\/mariadb\/install.my.cnf > \/mnt\/server\/.my.cnf'\r\nfi\r\n\r\n## mkdir and install db\r\necho -e \"installing mysql database\"\r\nrunuser -l container -c 'mkdir -p \/mnt\/server\/run\/mysqld'\r\nrunuser -l container -c 'mkdir -p \/mnt\/server\/log\/mysql'\r\nrunuser -l container -c 'mkdir \/mnt\/server\/mysql'\r\n\r\nrunuser -l container -c 'mysql_install_db --defaults-file=\/mnt\/server\/.my.cnf'\r\n\r\nif [ -f \/mnt\/server\/custom.my.cnf ]; then\r\n    echo -e \"moving current config back in place\"\r\n    mv \/mnt\/server\/custom.my.cnf \/mnt\/server\/.my.cnf\r\nelse\r\n    curl https:\/\/raw.githubusercontent.com\/parkervcp\/eggs\/master\/database\/sql\/mariadb\/my.cnf > \/mnt\/server\/.my.cnf\r\nfi\r\n\r\necho -e \"install complete\"\r\n\r\nexit",
-            "container": "mariadb:10.3",
+            "script": "#!/bin/bash\r\n# MariaDB Installation Script\r\n#\r\n# Server Files: /mnt/server\r\nset -x\r\n\r\necho -e \"installing dependencies\"\r\napt-get -y update\r\napt-get -y install curl\r\n\r\n## add user\r\necho -e \"adding container user\"\r\nuseradd -d /home/container -m container -s /bin/bash\r\n\r\n## own server to container user\r\nchown container: /mnt/server/\r\n\r\n## run install script as user\r\necho -e \"getting my.conf\"\r\nif [ -f /mnt/server/.my.cnf ]; then\r\n    echo -e \"moving current config for install\"\r\n    mv /mnt/server/.my.cnf /mnt/server/custom.my.cnf\r\nfi\r\n\r\nrunuser -l container -c 'curl https://raw.githubusercontent.com/parkervcp/eggs/master/database/sql/mariadb/install.my.cnf > /mnt/server/.my.cnf'\r\n\r\n## mkdir and install db\r\necho -e \"installing mysql database\"\r\nrunuser -l container -c 'mkdir -p /mnt/server/run/mysqld'\r\nrunuser -l container -c 'mkdir -p /mnt/server/log/mysql'\r\nrunuser -l container -c 'mkdir -p /mnt/server/mysql'\r\n\r\n# Check for new mariadb-install-db command, fallback to old mysql_install_db\r\nif command -v mariadb-install-db &> /dev/null; then\r\n    INSTALL_CMD=\"mariadb-install-db\"\r\nelse\r\n    INSTALL_CMD=\"mysql_install_db\"\r\nfi\r\n\r\necho -e \"Using initialization command: ${INSTALL_CMD}\"\r\nrunuser -l container -c \"${INSTALL_CMD} --defaults-file=/mnt/server/.my.cnf --auth-root-authentication-method=normal\"\r\n\r\nif [ -f /mnt/server/custom.my.cnf ]; then\r\n    echo -e \"moving current config back in place\"\r\n    mv /mnt/server/custom.my.cnf /mnt/server/.my.cnf\r\nelse\r\n    curl https://raw.githubusercontent.com/parkervcp/eggs/master/database/sql/mariadb/my.cnf > /mnt/server/.my.cnf\r\nfi\r\n\r\necho -e \"install complete\"\r\nexit",
+            "container": "ghcr.io/pterodactyl/installers:debian",
             "entrypoint": "bash"
         }
     },
