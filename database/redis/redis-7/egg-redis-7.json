@@ -4,39 +4,47 @@
         "version": "PTDL_v2",
         "update_url": null
     },
-    "exported_at": "2022-10-02T16:30:14+01:00",
-    "name": "Redis-7",
-    "author": "parker@parkervcp.com",
-    "description": "Redis is an open source (BSD licensed), in-memory data structure store, used as a database, cache and message broker. It supports data structures such as strings, hashes, lists, sets, sorted sets with range queries, bitmaps, hyperloglogs, geospatial indexes with radius queries and streams.",
+    "exported_at": "2025-12-06T00:42:28+00:00",
+    "name": "Redis Database",
+    "author": "admin@micheal.cc",
+    "description": "Redis is an open source (BSD licensed), in-memory data structure store, used as a database, cache, and message broker.",
     "features": null,
     "docker_images": {
-        "ghcr.io\/parkervcp\/yolks:redis_7": "ghcr.io\/parkervcp\/yolks:redis_7"
+        "Redis 7": "ghcr.io\/parkervcp\/yolks:redis_7"
     },
     "file_denylist": [],
-    "startup": "\/usr\/local\/bin\/redis-server \/home\/container\/redis.conf --save 60 1 --dir \/home\/container\/ --bind 0.0.0.0 --port {{SERVER_PORT}} --requirepass {{SERVER_PASSWORD}} --maxmemory {{SERVER_MEMORY}}mb --daemonize yes && redis-cli -p {{SERVER_PORT}}; redis-cli -p {{SERVER_PORT}} -a {{SERVER_PASSWORD}} shutdown save",
+    "startup": "redis-server /home/container/redis.conf --port {{SERVER_PORT}} --user default off --user {{REDIS_USER}} on \">{{REDIS_PASSWORD}}\" ~* +@all \\&*",
     "config": {
         "files": "{}",
-        "startup": "{\r\n    \"done\": \"Configuration loaded\"\r\n}",
+        "startup": "{\r\n    \"done\": \"Ready to accept connections\",\r\n    \"userInteraction\": []\r\n}",
         "logs": "{}",
         "stop": "^C"
     },
     "scripts": {
         "installation": {
-            "script": "#!\/bin\/ash\r\n# Redis Installation Script\r\n#\r\n# Server Files: \/mnt\/server\r\n\r\napk add --no-cache curl\r\n\r\nif [ ! -d \/mnt\/server ]; then\r\n    mkdir \/mnt\/server\/\r\nfi\r\n\r\ncd \/mnt\/server\/\r\n\r\nif [ ! -d \/mnt\/server\/redis.conf ]; then\r\n    curl https:\/\/raw.githubusercontent.com\/parkervcp\/eggs\/master\/database\/redis\/redis-7\/redis.conf -o redis.conf\r\nfi\r\n\r\nsleep 5\r\necho -e \"Install complete. Made this to not have issues.\"",
-            "container": "ghcr.io\/parkervcp\/installers:alpine",
+            "script": "#!\/bin\/ash\r\n# Redis Installation Script\r\n\r\napk add --no-cache curl\r\n\r\nif [ -f \/mnt\/server\/redis.conf ]; then\r\n    echo \"redis.conf already exists. Skipping download.\"\r\nelse\r\n    echo \"Downloading default redis.conf...\"\r\n    curl -o \/mnt\/server\/redis.conf https:\/\/raw.githubusercontent.com\/redis\/redis\/7.2\/redis.conf\r\n\r\n    echo \"Configuring redis.conf for Pterodactyl environment...\"\r\n    # Disable daemonize (Docker needs foreground process)\r\n    sed -i 's\/^daemonize yes\/daemonize no\/' \/mnt\/server\/redis.conf\r\n    \r\n    # Set binding to allow Docker networking (Security handled by Password + Docker Port mapping)\r\n    sed -i 's\/^bind 127.0.0.1 -::1\/bind 0.0.0.0\/' \/mnt\/server\/redis.conf\r\n    \r\n    # Set working directory to container home\r\n    sed -i 's\/^dir .\\\/\/dir \\\/home\\\/container\\\/\/' \/mnt\/server\/redis.conf\r\n    \r\n    # Disable protected mode (Relies on password)\r\n    sed -i 's\/^protected-mode yes\/protected-mode no\/' \/mnt\/server\/redis.conf\r\n    \r\n    echo \"Configuration complete.\"\r\nfi",
+            "container": "alpine:latest",
             "entrypoint": "ash"
         }
     },
     "variables": [
         {
-            "name": "Redis Password",
-            "description": "The password redis should use to secure the server.",
-            "env_variable": "SERVER_PASSWORD",
-            "default_value": "P@55w0rd",
+            "name": "Redis Username",
+            "description": "The custom username for ACL authentication.",
+            "env_variable": "REDIS_USER",
+            "default_value": "default",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "required|string",
-            "field_type": "text"
+            "rules": "required|string|min:3"
+        },
+        {
+            "name": "Redis Password",
+            "description": "The password required to access this Redis instance.",
+            "env_variable": "REDIS_PASSWORD",
+            "default_value": "ChangeMe123!",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|min:3"
         }
     ]
 }
