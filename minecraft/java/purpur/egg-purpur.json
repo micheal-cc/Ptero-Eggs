@@ -4,9 +4,9 @@
         "version": "PTDL_v2",
         "update_url": null
     },
-    "exported_at": "2024-02-13T17:26:13+0000",
+    "exported_at": "2026-01-02T16:34:36+00:00",
     "name": "Purpur",
-    "author": "purpur@birdflop.com",
+    "author": "admin@micheal.cc",
     "description": "A drop-in replacement for Paper servers designed for configurability, and new fun and exciting gameplay features.",
     "features": [
         "eula",
@@ -14,12 +14,12 @@
         "pid_limit"
     ],
     "docker_images": {
-        "Java 8": "ghcr.io\/pterodactyl\/yolks:java_8",
-        "Java 11": "ghcr.io\/pterodactyl\/yolks:java_11",
-        "Java 16": "ghcr.io\/pterodactyl\/yolks:java_16",
-        "Java 17": "ghcr.io\/pterodactyl\/yolks:java_17",
-        "Java 18": "ghcr.io\/pterodactyl\/yolks:java_18",
-        "Java 21": "ghcr.io\/pterodactyl\/yolks:java_21"
+        "Java 21": "ghcr.io/pterodactyl/yolks:java_21",
+        "Java 18": "ghcr.io/pterodactyl/yolks:java_18",
+        "Java 17": "ghcr.io/pterodactyl/yolks:java_17",
+        "Java 16": "ghcr.io/pterodactyl/yolks:java_16",
+        "Java 11": "ghcr.io/pterodactyl/yolks:java_11",
+        "Java 8": "ghcr.io/pterodactyl/yolks:java_8"
     },
     "file_denylist": [],
     "startup": "java --add-modules=jdk.incubator.vector -Xms128M -Xmx{{SERVER_MEMORY}}M -Dterminal.jline=false -Dterminal.ansi=true -jar {{SERVER_JARFILE}}",
@@ -31,8 +31,8 @@
     },
     "scripts": {
         "installation": {
-            "script": "#!\/bin\/ash\r\n# Paper Installation Script\r\n#\r\n# Server Files: \/mnt\/server\r\nPROJECT=purpur\r\n\r\nif [ -n \"${DL_PATH}\" ]; then\r\n\techo -e \"Using supplied download url: ${DL_PATH}\"\r\n\tDOWNLOAD_URL=`eval echo $(echo ${DL_PATH} | sed -e 's\/{{\/${\/g' -e 's\/}}\/}\/g')`\r\nelse\r\n\tVER_EXISTS=`curl -s https:\/\/api.purpurmc.org\/v2\/${PROJECT} | jq -r --arg VERSION $MINECRAFT_VERSION '.versions[] | contains($VERSION)' | grep true`\r\n\tLATEST_VERSION=`curl -s https:\/\/api.purpurmc.org\/v2\/${PROJECT} | jq -r '.versions' | jq -r '.[-1]'`\r\n\r\n\tif [ \"${VER_EXISTS}\" == \"true\" ]; then\r\n\t\techo -e \"Version is valid. Using version ${MINECRAFT_VERSION}\"\r\n\telse\r\n\t\techo -e \"Using the latest ${PROJECT} version\"\r\n\t\tMINECRAFT_VERSION=${LATEST_VERSION}\r\n\tfi\r\n\t\r\n\tBUILD_EXISTS=`curl -s https:\/\/api.purpurmc.org\/v2\/${PROJECT}\/${MINECRAFT_VERSION} | jq -r --arg BUILD ${BUILD_NUMBER} '.builds.all | tostring | contains($BUILD)' | grep true`\r\n\tLATEST_BUILD=`curl -s https:\/\/api.purpurmc.org\/v2\/${PROJECT}\/${MINECRAFT_VERSION} | jq -r '.builds.latest'`\r\n\t\r\n\tif [ \"${BUILD_EXISTS}\" == \"true\" ]; then\r\n\t\techo -e \"Build is valid for version ${MINECRAFT_VERSION}. Using build ${BUILD_NUMBER}\"\r\n\telse\r\n\t\techo -e \"Using the latest ${PROJECT} build for version ${MINECRAFT_VERSION}\"\r\n\t\tBUILD_NUMBER=${LATEST_BUILD}\r\n\tfi\r\n\t\r\n\tJAR_NAME=${PROJECT}-${MINECRAFT_VERSION}-${BUILD_NUMBER}.jar\r\n\t\r\n\techo \"Version being downloaded\"\r\n\techo -e \"MC Version: ${MINECRAFT_VERSION}\"\r\n\techo -e \"Build: ${BUILD_NUMBER}\"\r\n\techo -e \"JAR Name of Build: ${JAR_NAME}\"\r\n\tDOWNLOAD_URL=https:\/\/api.purpurmc.org\/v2\/${PROJECT}\/${MINECRAFT_VERSION}\/${BUILD_NUMBER}\/download\r\nfi\r\n\r\ncd \/mnt\/server\r\n\r\necho -e \"Running curl -o ${SERVER_JARFILE} ${DOWNLOAD_URL}\"\r\n\r\nif [ -f ${SERVER_JARFILE} ]; then\r\n\tmv ${SERVER_JARFILE} ${SERVER_JARFILE}.old\r\nfi\r\n\r\ncurl -o ${SERVER_JARFILE} ${DOWNLOAD_URL}\r\n\r\nif [ ! -f server.properties ]; then\r\n    echo -e \"Downloading MC server.properties\"\r\n    curl -o server.properties https:\/\/raw.githubusercontent.com\/parkervcp\/eggs\/master\/minecraft\/java\/server.properties\r\nfi",
-            "container": "ghcr.io\/parkervcp\/installers:alpine",
+            "script": "#!/bin/ash\r\n# Purpur Installation Script\r\n#\r\n# Server Files: /mnt/server\r\nPROJECT=purpur\r\n\r\ncd /mnt/server\r\n\r\nif [ -n \"${DL_PATH}\" ]; then\r\n    echo -e \"Using supplied download url: ${DL_PATH}\"\r\n    DOWNLOAD_URL=$(eval echo $(echo ${DL_PATH} | sed -e 's/{{/${/g' -e 's/}}/}/g'))\r\nelse\r\n    # 1. Resolve Version\r\n    if [ -z \"${MINECRAFT_VERSION}\" ] || [ \"${MINECRAFT_VERSION}\" == \"latest\" ]; then\r\n        echo -e \"Resolving latest Purpur version...\"\r\n        MINECRAFT_VERSION=$(curl -s https://api.purpurmc.org/v2/${PROJECT} | jq -r '.versions[-1]')\r\n    fi\r\n\r\n    echo -e \"Using Version: ${MINECRAFT_VERSION}\"\r\n\r\n    # 2. Resolve Build\r\n    if [ -z \"${BUILD_NUMBER}\" ] || [ \"${BUILD_NUMBER}\" == \"latest\" ]; then\r\n        echo -e \"Resolving latest build for ${MINECRAFT_VERSION}...\"\r\n        BUILD_NUMBER=$(curl -s https://api.purpurmc.org/v2/${PROJECT}/${MINECRAFT_VERSION} | jq -r '.builds.latest')\r\n    fi\r\n\r\n    echo -e \"Using Build: ${BUILD_NUMBER}\"\r\n\r\n    # 3. Construct URL\r\n    # Format: https://api.purpurmc.org/v2/purpur/{version}/{build}/download\r\n    DOWNLOAD_URL=\"https://api.purpurmc.org/v2/${PROJECT}/${MINECRAFT_VERSION}/${BUILD_NUMBER}/download\"\r\nfi\r\n\r\n# 4. Download\r\necho -e \"Running curl -o ${SERVER_JARFILE} ${DOWNLOAD_URL}\"\r\n\r\nif [ -f ${SERVER_JARFILE} ]; then\r\n    mv ${SERVER_JARFILE} ${SERVER_JARFILE}.old\r\nfi\r\n\r\ncurl -o ${SERVER_JARFILE} ${DOWNLOAD_URL}\r\n\r\n# 5. Configs\r\nif [ ! -f server.properties ]; then\r\n    echo -e \"Downloading MC server.properties\"\r\n    curl -o server.properties https://raw.githubusercontent.com/parkervcp/eggs/master/minecraft/java/server.properties\r\nfi",
+            "container": "ghcr.io/parkervcp/installers:alpine",
             "entrypoint": "ash"
         }
     },
@@ -54,7 +54,7 @@
             "default_value": "server.jar",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "required|regex:\/^([\\w\\d._-]+)(\\.jar)$\/|max:80",
+            "rules": "required|regex:/^([\\w\\d._-]+)(\\.jar)$/|max:80",
             "field_type": "text"
         },
         {
