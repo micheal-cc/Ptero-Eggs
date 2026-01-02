@@ -1,0 +1,71 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-01-02T16:34:36+00:00",
+    "name": "LeafMC",
+    "author": "admin@micheal.cc",
+    "description": "Leaf is a fork of Gale (itself a fork of Purpur) focused on fixing bugs and improving performance.",
+    "features": [
+        "eula",
+        "java_version",
+        "pid_limit"
+    ],
+    "docker_images": {
+        "Java 21": "ghcr.io/pterodactyl/yolks:java_21",
+        "Java 18": "ghcr.io/pterodactyl/yolks:java_18",
+        "Java 17": "ghcr.io/pterodactyl/yolks:java_17",
+        "Java 16": "ghcr.io/pterodactyl/yolks:java_16",
+        "Java 11": "ghcr.io/pterodactyl/yolks:java_11",
+        "Java 8": "ghcr.io/pterodactyl/yolks:java_8"
+    },
+    "file_denylist": [],
+    "startup": "java --add-modules=jdk.incubator.vector -Xms128M -Xmx{{SERVER_MEMORY}}M -Dterminal.jline=false -Dterminal.ansi=true -jar {{SERVER_JARFILE}}",
+    "config": {
+        "files": "{\r\n    \"server.properties\": {\r\n        \"parser\": \"properties\",\r\n        \"find\": {\r\n            \"server-ip\": \"0.0.0.0\",\r\n            \"server-port\": \"{{server.build.default.port}}\"\r\n        }\r\n    }\r\n}",
+        "startup": "{\r\n    \"done\": \")! For help, type \"\r\n}",
+        "logs": "{}",
+        "stop": "stop"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/ash\r\n# LeafMC Installation Script\r\n#\r\n# Server Files: /mnt/server\r\nPROJECT=leaf\r\nAPI_URL=\"https://api.leafmc.one/v2/projects/${PROJECT}\"\r\n\r\ncd /mnt/server\r\n\r\nif [ -n \"${DL_PATH}\" ]; then\r\n    echo -e \"Using supplied download url: ${DL_PATH}\"\r\n    DOWNLOAD_URL=$(eval echo $(echo ${DL_PATH} | sed -e 's/{{/${/g' -e 's/}}/}/g'))\r\nelse\r\n    # 1. Resolve Version\r\n    if [ -z \"${MINECRAFT_VERSION}\" ] || [ \"${MINECRAFT_VERSION}\" == \"latest\" ]; then\r\n        echo -e \"Resolving latest LeafMC version...\"\r\n        MINECRAFT_VERSION=$(curl -s ${API_URL} | jq -r '.versions[-1]')\r\n    fi\r\n\r\n    echo -e \"Using Version: ${MINECRAFT_VERSION}\"\r\n\r\n    # 2. Resolve Build\r\n    if [ -z \"${BUILD_NUMBER}\" ] || [ \"${BUILD_NUMBER}\" == \"latest\" ]; then\r\n        echo -e \"Resolving latest build for ${MINECRAFT_VERSION}...\"\r\n        BUILD_NUMBER=$(curl -s ${API_URL}/versions/${MINECRAFT_VERSION} | jq -r '.builds[-1]')\r\n    fi\r\n\r\n    echo -e \"Using Build: ${BUILD_NUMBER}\"\r\n\r\n    # 3. Get Jar Name & Construct URL\r\n    # We query the build endpoint to get the specific file name\r\n    # Endpoint: /projects/leaf/versions/{ver}/builds/{build}\r\n    RESPONSE=$(curl -s ${API_URL}/versions/${MINECRAFT_VERSION}/builds/${BUILD_NUMBER})\r\n    \r\n    # Extract filename from \"downloads.application.name\"\r\n    JAR_FILE_NAME=$(echo $RESPONSE | jq -r '.downloads.application.name')\r\n    \r\n    if [ \"$JAR_FILE_NAME\" == \"null\" ] || [ -z \"$JAR_FILE_NAME\" ]; then\r\n         echo \"Error: Could not retrieve jar filename from API.\"\r\n         exit 1\r\n    fi\r\n\r\n    # URL Pattern: .../builds/{build}/downloads/{filename}\r\n    DOWNLOAD_URL=\"${API_URL}/versions/${MINECRAFT_VERSION}/builds/${BUILD_NUMBER}/downloads/${JAR_FILE_NAME}\"\r\nfi\r\n\r\n# 4. Download\r\necho -e \"Running curl -o ${SERVER_JARFILE} ${DOWNLOAD_URL}\"\r\n\r\nif [ -f ${SERVER_JARFILE} ]; then\r\n    mv ${SERVER_JARFILE} ${SERVER_JARFILE}.old\r\nfi\r\n\r\ncurl -o ${SERVER_JARFILE} ${DOWNLOAD_URL}\r\n\r\n# 5. Configs\r\nif [ ! -f server.properties ]; then\r\n    echo -e \"Downloading MC server.properties\"\r\n    curl -o server.properties https://raw.githubusercontent.com/parkervcp/eggs/master/minecraft/java/server.properties\r\nfi",
+            "container": "ghcr.io/parkervcp/installers:alpine",
+            "entrypoint": "ash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Minecraft Version",
+            "description": "The version of Minecraft to download. \r\n\r\nLeave at latest to always get the latest version. Invalid versions will default to latest.",
+            "env_variable": "MINECRAFT_VERSION",
+            "default_value": "latest",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "Server Jar File",
+            "description": "The name of the .jar file to run the server with.",
+            "env_variable": "SERVER_JARFILE",
+            "default_value": "server.jar",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|regex:/^([\\w\\d._-]+)(\\.jar)$/|max:80",
+            "field_type": "text"
+        },
+        {
+            "name": "Build Number",
+            "description": "The build number for the LeafMC release.\r\n\r\nLeave at latest to always get the latest version. Invalid versions will default to latest.",
+            "env_variable": "BUILD_NUMBER",
+            "default_value": "latest",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:20",
+            "field_type": "text"
+        }
+    ]
+}
