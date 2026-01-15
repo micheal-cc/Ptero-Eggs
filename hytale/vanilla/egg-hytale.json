@@ -9,7 +9,7 @@
     "description": "Hytale Dedicated Server configured according to the official Hypixel Studios manual. Requires Java 25.",
     "features": null,
     "docker_images": {
-        "Java 25": "michealc/hytale-java25:latest"
+        "Java 25": "docker.io/michealc/hytale-java25:latest"
     },
     "startup": "java -Xms128M -Xmx{{SERVER_MEMORY}}M -jar {{SERVER_JARFILE}}",
     "config": {
