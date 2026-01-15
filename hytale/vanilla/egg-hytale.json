@@ -1,0 +1,67 @@
+{
+    "meta": {
+        "version": "pt-json-1.0",
+        "update_url": null
+    },
+    "exported_at": "2026-01-16T12:00:00Z",
+    "name": "Hytale Dedicated Server (Refined)",
+    "author": "micheal@rushlabs.com",
+    "description": "Hytale Dedicated Server configured according to the official Hypixel Studios manual. Requires Java 25 and UDP Port 5520.",
+    "features": null,
+    "docker_images": {
+        "Java 25": ""
+    },
+    "file_denylist": [],
+    "startup": "java -Xms128M -Xmx{{SERVER_MEMORY}}M -jar {{SERVER_JARFILE}}",
+    "config": {
+        "files": "{}",
+        "startup": "{\r\n    \"done\": \"Authentication successful!\",\r\n    \"userInteraction\": [\r\n        \"Visit:\",\r\n        \"Code:\"\r\n    ]\r\n}",
+        "logs": "{}",
+        "stop": "/stop"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\r\n# Hytale Server Installation Script\r\n\r\napt update\r\napt install -y curl unzip\r\n\r\nif [ ! -z \"${DOWNLOAD_URL}\" ]; then\r\n    echo \"Downloading server from ${DOWNLOAD_URL}...\"\r\n    curl -L \"${DOWNLOAD_URL}\" -o server.zip\r\n    unzip server.zip\r\n    rm server.zip\r\nelse\r\n    echo \"No Download URL provided. Please upload HytaleServer.jar manually via SFTP.\"\r\nfi\r\n\r\necho \"Installation complete.\"",
+            "container": "ghcr.io/pterodactyl/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Server Jar File",
+            "description": "The name of the main server jar file.",
+            "env_variable": "SERVER_JARFILE",
+            "default_value": "HytaleServer.jar",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string"
+        },
+        {
+            "name": "Download URL",
+            "description": "URL to download the server zip (if available).",
+            "env_variable": "DOWNLOAD_URL",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|url"
+        },
+        {
+            "name": "Override Session Token",
+            "description": "Optional: For Server Providers using the API auth flow.",
+            "env_variable": "OVERRIDE_SESSION_TOKEN",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string"
+        },
+        {
+            "name": "Override Identity Token",
+            "description": "Optional: For Server Providers using the API auth flow.",
+            "env_variable": "OVERRIDE_IDENTITY_TOKEN",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string"
+        }
+    ]
+}
