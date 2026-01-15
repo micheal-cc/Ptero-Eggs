@@ -1,0 +1,94 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-01-15T22:03:06+00:00",
+    "name": "Hytale Server",
+    "author": "admin@micheal.cc",
+    "description": "Hytale Dedicated Server using the official CLI downloader. Requires Java 25.",
+    "features": [
+        "java_version"
+    ],
+    "docker_images": {
+        "Java 25": "michealc\/hytale-java25:latest"
+    },
+    "file_denylist": [],
+    "startup": "java -Xms128M -Xmx{{SERVER_MEMORY}}M -jar {{SERVER_JARFILE}} --assets {{ASSETS_PATH}} --bind 0.0.0.0:{{SERVER_PORT}}",
+    "config": {
+        "files": "{}",
+        "startup": "{\r\n    \"done\": \"Authentication successful!\",\r\n    \"userInteraction\": [\r\n        \"Visit:\",\r\n        \"Code:\"\r\n    ]\r\n}",
+        "logs": "{}",
+        "stop": "\/stop"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/bash\r\n# Hytale Server Install Script with Auth Support\r\n\r\napt update\r\napt install -y curl unzip\r\n\r\n# 1. Download the Official Downloader Tool\r\necho \"Fetching Hytale Downloader Tool...\"\r\ncurl -L \"${DOWNLOAD_URL}\" -o downloader.zip\r\nunzip -o downloader.zip\r\nchmod +x hytale-downloader-linux-amd64\r\n\r\n# 2. Run the Downloader\r\n# If credentials exist, this runs automatically. If not, it waits for you to auth.\r\necho \"------------------------------------------------------\"\r\necho \"STARTING DOWNLOADER...\"\r\necho \"If this is a fresh install, click the server name and check the INSTALL OUTPUT for the auth link.\"\r\necho \"------------------------------------------------------\"\r\n\r\n.\/hytale-downloader-linux-amd64 -download-path server_files.zip -patchline ${PATCHLINE}\r\n\r\n# 3. Unpack the actual game files\r\nif [ -f \"server_files.zip\" ]; then\r\n    echo \"Download successful. Unpacking game files...\"\r\n    unzip -o server_files.zip\r\n    rm server_files.zip\r\nelse\r\n    echo \"ERROR: Game files not found. Did you complete the authentication?\"\r\n    exit 1\r\nfi\r\n\r\n# 4. Cleanup\r\nrm downloader.zip\r\necho \"Installation complete.\"",
+            "container": "ghcr.io\/pterodactyl\/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Server Jar File",
+            "description": "The name of the main server jar file.",
+            "env_variable": "SERVER_JARFILE",
+            "default_value": "HytaleServer.jar",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:40",
+            "field_type": "text"
+        },
+        {
+            "name": "Patchline",
+            "description": "The release channel to download (e.g. live, pre-release).",
+            "env_variable": "PATCHLINE",
+            "default_value": "live",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string|max:20",
+            "field_type": "text"
+        },
+        {
+            "name": "Assets Path",
+            "description": "Path to the assets folder.",
+            "env_variable": "ASSETS_PATH",
+            "default_value": ".\/assets",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Download URL",
+            "description": "URL to download the downloader tool.",
+            "env_variable": "DOWNLOAD_URL",
+            "default_value": "https:\/\/downloader.hytale.com\/hytale-downloader.zip",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|url",
+            "field_type": "text"
+        },
+        {
+            "name": "Override Session Token",
+            "description": "Optional: For Server Providers using the API auth flow.",
+            "env_variable": "OVERRIDE_SESSION_TOKEN",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Override Identity Token",
+            "description": "Optional: For Server Providers using the API auth flow.",
+            "env_variable": "OVERRIDE_IDENTITY_TOKEN",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        }
+    ]
+}
