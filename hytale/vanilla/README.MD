@@ -2,6 +2,12 @@
 
 This Pterodactyl Egg installs and runs a **Hytale Dedicated Server** using the official Hytale CLI Downloader. It supports the required **Java 25** environment and handles the **Device Authentication** flow required by Hypixel Studios.
 
+> [!IMPORTANT]
+>
+> ### Action Required:
+>
+> This pterodactyl hytale server egg is still experimental and not purposed to be used directly in a production environment. For any issues make sure to reach out to me at [micheal.cc/discord](https://micheal.cc/discord).
+
 ## 📋 Prerequisites
 
 Before importing this egg, ensure your Pterodactyl node meets the following requirement:
@@ -80,7 +86,7 @@ To update the Hytale server to the latest version:
 
 **Server crashes immediately with "Unsupported Class Version" or "Java Version Error"**
 * **Cause**: You are not using the Java 25 Docker image.
-* **Fix**: Go to the **Startup** tab in Pterodactyl. Ensure the **Docker Image** field is set to `micheal_services/hytale-java25:latest`.
+* **Fix**: Go to the **Startup** tab in Pterodactyl. Ensure the **Docker Image** field is set to `michealc/hytale-java25:latest`.
 
 **"Authentication Timed Out" or Installer Failed**
 * **Cause**: You didn't enter the code in the browser fast enough.
