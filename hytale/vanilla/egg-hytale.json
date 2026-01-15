@@ -1,17 +1,16 @@
 {
     "meta": {
-        "version": "pt-json-1.0",
+        "version": "PTDL_v1",
         "update_url": null
     },
     "exported_at": "2026-01-16T12:00:00Z",
-    "name": "Hytale Dedicated Server (Refined)",
-    "author": "micheal@rushlabs.com",
-    "description": "Hytale Dedicated Server configured according to the official Hypixel Studios manual. Requires Java 25 and UDP Port 5520.",
+    "name": "Hytale Server (Refined)",
+    "author": "admin@micheal.cc",
+    "description": "Hytale Dedicated Server configured according to the official Hypixel Studios manual. Requires Java 25.",
     "features": null,
     "docker_images": {
-        "Java 25": ""
+        "Java 25": "docker.io/micheal_services/hytale-java25:latest"
     },
-    "file_denylist": [],
     "startup": "java -Xms128M -Xmx{{SERVER_MEMORY}}M -jar {{SERVER_JARFILE}}",
     "config": {
         "files": "{}",
@@ -31,10 +30,10 @@
             "name": "Server Jar File",
             "description": "The name of the main server jar file.",
             "env_variable": "SERVER_JARFILE",
-            "default_value": "HytaleServer.jar",
+            "default_value": "server.jar",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "required|string"
+            "rules": "required|string|max:20"
         },
         {
             "name": "Download URL",
