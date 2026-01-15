@@ -8,7 +8,7 @@ Before importing this egg, ensure your Pterodactyl node meets the following requ
 
 1.  **Custom Java 25 Docker Image**: 
     The server **must** use a Docker image containing Java 25 (OpenJDK or Oracle). 
-    * **Image Name**: `micheal_services/hytale-java25:latest` (or your private registry equivalent).
+    * **Image Name**: `michealc/hytale-java25:latest` (or your private registry equivalent).
     * *Note: Standard Pterodactyl images (Java 17/21) will NOT work and will cause a crash on startup.*
 
 ---
