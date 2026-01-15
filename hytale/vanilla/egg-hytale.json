@@ -9,7 +9,7 @@
     "description": "Hytale Dedicated Server configured according to the official Hypixel Studios manual. Requires Java 25.",
     "features": null,
     "docker_images": {
-        "Java 25": "docker.io/micheal_services/hytale-java25:latest"
+        "Java 25": "michealc/hytale-java25:latest"
     },
     "startup": "java -Xms128M -Xmx{{SERVER_MEMORY}}M -jar {{SERVER_JARFILE}}",
     "config": {
@@ -37,12 +37,12 @@
         },
         {
             "name": "Download URL",
-            "description": "URL to download the server zip (if available).",
+            "description": "URL to download the server zip.",
             "env_variable": "DOWNLOAD_URL",
-            "default_value": "",
+            "default_value": "https://downloader.hytale.com/hytale-downloader.zip",
             "user_viewable": true,
             "user_editable": true,
-            "rules": "nullable|url"
+            "rules": "required|url"
         },
         {
             "name": "Override Session Token",
