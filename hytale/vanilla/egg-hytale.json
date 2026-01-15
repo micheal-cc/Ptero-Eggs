@@ -20,7 +20,7 @@
     },
     "scripts": {
         "installation": {
-            "script": "#!/bin/bash\r\n# Hytale Server Installation Script\r\n\r\napt update\r\napt install -y curl unzip\r\n\r\nif [ ! -z \"${DOWNLOAD_URL}\" ]; then\r\n    echo \"Downloading server from ${DOWNLOAD_URL}...\"\r\n    curl -L \"${DOWNLOAD_URL}\" -o server.zip\r\n    unzip server.zip\r\n    rm server.zip\r\nelse\r\n    echo \"No Download URL provided. Please upload HytaleServer.jar manually via SFTP.\"\r\nfi\r\n\r\necho \"Installation complete.\"",
+            "script": "#!/bin/bash\r\n# Hytale Server Installation Script\r\n\r\napt update\r\napt install -y curl unzip\r\n\r\n# 1. Download the file (Defaults to Hytale URL via Variable)\r\necho \"Downloading server from ${DOWNLOAD_URL}...\"\r\ncurl -L \"${DOWNLOAD_URL}\" -o hytale-downloader.zip\r\n\r\n# 2. Unzip and overwrite existing files\r\necho \"Unpacking server files...\"\r\nunzip -o hytale-downloader.zip\r\n\r\n# 3. Cleanup\r\nrm hytale-downloader.zip\r\n\r\necho \"Installation complete.\"",
             "container": "ghcr.io/pterodactyl/installers:debian",
             "entrypoint": "bash"
         }
